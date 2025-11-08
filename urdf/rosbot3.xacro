@@ -1,59 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-  Description of the ROSelito robot.
+  Description of the ROSbot3 robot.
 
-  Author: Helio Perroni Filho
+  Author: Gabryel Batista
 -->
 
-<robot name="rosbot3" xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:include filename="$(find rosbot3_description)/urdf/ugv02.xacro"/>
+<robot name="rosbot3"  xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find rosbot3_description)/urdf/base.xacro"/>
 
-  <xacro:property name="payload_base_length" value="${156.22 * M}"/>
-  <xacro:property name="payload_base_width" value="${159.96 * M}"/>
-  <xacro:property name="payload_base_height" value="${42.7 * M}"/>
+  <!-- Propriedades do suporte e lidar -->
+  <!-- Alturas baseadas nas especificações: base=103mm, support=141mm, lidar=197mm -->
+  <xacro:property name="base_top_z" value="${103 * M}"/>
+  <xacro:property name="lidar_top_z" value="${141 * M}"/>
+  
+  <!-- Dimensões do lidar -->
+  <xacro:property name="lidar_height" value="${lidar_top_z - base_top_z}"/>
+  <xacro:property name="lidar_size" value="${50 * M}"/>
 
-  <xacro:property name="lidar_side" value="${45.61 * M}"/>
-  <xacro:property name="lidar_height" value="${37.6 * M}"/>
-
-  <xacro:solid_block
-    name="payload_base"
-    size_x="${payload_base_length}"
-    size_y="${payload_base_width}"
-    size_z="${payload_base_height}"
-  />
-
-  <xacro:joint_fixed
-    parent="body"
-    child="payload_base"
-    z="${0.5 * (body_height + payload_base_height)}"
-  />
-
-  <xacro:camera_link name="camera_front"/>
-  <xacro:joint_fixed
-    parent="payload_base"
-    child="camera_front"
-    x="${0.5 * payload_base_length}"
-  />
-
-  <xacro:solid_block
-    name="lidar"
-    size_x="${lidar_side}"
-    size_y="${lidar_side}"
-    size_z="${lidar_height}"
-  />
-
-  <xacro:joint_fixed
-    parent="payload_base"
-    child="lidar"
-    x="${0.5 * payload_base_height}"
-    z="${0.5 * (payload_base_height + lidar_height)}"
-  />
-
+  <!-- Lidar -->
+  <xacro:solid_block 
+    name="lidar" 
+    size_x="${lidar_size}" 
+    size_y="${lidar_size}" 
+    size_z="${lidar_height}"/>
+  
+  <!-- Link do laser (para o sensor LiDAR) -->
   <link name="laser"/>
-  <xacro:joint_fixed
-    parent="lidar"
-    child="laser"
-    z="${0.5 * lidar_height}"
-  />
+
+
+  <!-- Junta conectando o lidar ao body (posicionado no topo dos postes) -->
+  <xacro:property name="lidar_z_joint" value="${0.5 * body_height + 0.5 * lidar_height}"/>
+  <xacro:joint_fixed 
+    parent="body" 
+    child="lidar" 
+    z="${lidar_z_joint}"/>
+
+  <!-- Junta conectando o link laser ao lidar -->
+  <xacro:joint_fixed 
+    parent="lidar" 
+    child="laser" 
+    z="${0.5 * lidar_height}"/>
+
 </robot>

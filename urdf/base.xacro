@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find ros_commons)/urdf/domain.xacro"/>
+
+  <xacro:property name="M" value="0.001"/>
+  <xacro:property name="DEG" value="0.01745329251"/>
+
+  <xacro:property name="ground_clearance" value="${23 * M}"/>
+  <xacro:property name="wheel_diameter" value="${84 * M}"/>
+  <xacro:property name="wheel_radius" value="${0.5 * wheel_diameter}"/>
+  <xacro:property name="wheelbase" value="${106 * M}"/>
+  <xacro:property name="body_length" value="${200 * M}"/>
+  <xacro:property name="body_width" value="${233 * M}"/>
+  <xacro:property name="overall_height_base" value="${103 * M}"/>
+
+  <xacro:property name="wheel_thickness" value="${23 * M}"/> 
+
+  <xacro:property name="body_height" value="${overall_height_base - ground_clearance}"/>
+  
+  <xacro:property name="body_z_offset" value="${ground_clearance + 0.5 * body_height}"/>
+  
+  <!-- O eixo deve estar abaixo do centro do body, de forma que as rodas toquem o chão -->
+  <!-- O offset é negativo porque o eixo está abaixo do centro do body -->
+  <xacro:property name="wheel_axle_z_offset" value="${wheel_radius - 0.5 * body_height - ground_clearance}"/>
+  
+  <!-- wheel_separation: distância entre os centros das rodas esquerda e direita -->
+  <xacro:property name="wheel_separation" value="${body_width - wheel_thickness}"/>
+
+  <xacro:macro name="wheels" params="position">
+    <xacro:solid_cylinder name="wheel_${position}_left" length="${wheel_thickness}" radius="${wheel_radius}" roll="${90.0 * DEG}"/>
+    <xacro:solid_cylinder name="wheel_${position}_right" length="${wheel_thickness}" radius="${wheel_radius}" roll="${90.0 * DEG}"/>
+    <xacro:solid_cylinder name="wheel_${position}_axle" length="${wheel_separation}" radius="0.005" roll="${90.0 * DEG}"/>
+    
+    <xacro:joint_continuous 
+      name="joint_wheel_${position}_left" 
+      parent="wheel_${position}_axle" 
+      child="wheel_${position}_left" 
+      y="${(wheel_separation + wheel_thickness) * 0.5}" 
+      axis="0 1 0"/>
+    <xacro:joint_continuous 
+      name="joint_wheel_${position}_right" 
+      parent="wheel_${position}_axle" 
+      child="wheel_${position}_right" 
+      y="${(wheel_separation + wheel_thickness) * -0.5}" 
+      axis="0 1 0"/>
+  </xacro:macro>
+
+  <xacro:wheels position="front"/>
+  <xacro:wheels position="rear"/>
+
+  <!-- Corpo do robô -->
+  <xacro:solid_block 
+    name="body" 
+    size_x="${body_length}" 
+    size_y="${body_width}" 
+    size_z="${body_height}"/>
+
+  <!-- Juntas conectando os eixos ao body -->
+  <xacro:joint_fixed parent="body" child="wheel_front_axle" x="${0.5 * wheelbase}" z="${wheel_axle_z_offset}"/>
+  <xacro:joint_fixed parent="body" child="wheel_rear_axle" x="${-0.5 * wheelbase}" z="${wheel_axle_z_offset}"/>
+
+  <!-- Link base para conectar o body -->
+  <link name="base_link"/>
+  <xacro:joint_fixed parent="base_link" child="body" z="${body_z_offset}"/>
+</robot>
