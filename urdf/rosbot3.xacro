@@ -9,7 +9,6 @@
 <robot name="rosbot3"  xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:include filename="$(find rosbot3_description)/urdf/base.xacro"/>
 
-  <!-- Propriedades do suporte e lidar -->
   <!-- Alturas baseadas nas especificações: base=103mm, support=141mm, lidar=197mm -->
   <xacro:property name="base_top_z" value="${103 * M}"/>
   <xacro:property name="lidar_top_z" value="${141 * M}"/>
@@ -17,6 +16,20 @@
   <!-- Dimensões do lidar -->
   <xacro:property name="lidar_height" value="${lidar_top_z - base_top_z}"/>
   <xacro:property name="lidar_size" value="${50 * M}"/>
+  <xacro:property name="lidar_offset_x" value="${30 * M}"/>
+
+  <!-- Dimensões do suporte da camera -->
+  <xacro:property name="camera_support_height" value="${94 * M}"/>
+  <xacro:property name="camera_support_size" value="${20 * M}"/>
+  <xacro:property name="camera_offset_x" value="${-30 * M}"/>
+
+  <xacro:solid_block 
+    name="camera_support" 
+    size_x="${camera_support_size}" 
+    size_y="${camera_support_size}" 
+    size_z="${camera_support_height}"
+  />
+
 
   <!-- Lidar -->
   <xacro:solid_block 
@@ -28,13 +41,21 @@
   <!-- Link do laser (para o sensor LiDAR) -->
   <link name="laser"/>
 
-
-  <!-- Junta conectando o lidar ao body (posicionado no topo dos postes) -->
+  <!-- Junta conectando o lidar ao body (centrado no topo) -->
   <xacro:property name="lidar_z_joint" value="${0.5 * body_height + 0.5 * lidar_height}"/>
   <xacro:joint_fixed 
     parent="body" 
     child="lidar" 
+    x="${lidar_offset_x}"
     z="${lidar_z_joint}"/>
+
+  <!-- Junta conectando o camera_support ao body (atrás do lidar) -->
+  <xacro:property name="camera_support_z_joint" value="${0.5 * body_height + 0.5 * camera_support_height}"/>
+  <xacro:joint_fixed 
+    parent="body" 
+    child="camera_support" 
+    x="${camera_offset_x}"
+    z="${camera_support_z_joint}"/>
 
   <!-- Junta conectando o link laser ao lidar -->
   <xacro:joint_fixed 
