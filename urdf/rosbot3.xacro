@@ -9,7 +9,7 @@
 <robot name="rosbot3"  xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:include filename="$(find rosbot3_description)/urdf/base.xacro"/>
 
-  <!-- Alturas baseadas nas especificações: base=103mm, support=141mm, lidar=197mm -->
+  <!-- Alturas baseadas nas especificações disponíveis em https://husarion.com/manuals/rosbot/ -->
   <xacro:property name="base_top_z" value="${103 * M}"/>
   <xacro:property name="lidar_top_z" value="${141 * M}"/>
   
@@ -23,11 +23,31 @@
   <xacro:property name="camera_support_size" value="${20 * M}"/>
   <xacro:property name="camera_offset_x" value="${-30 * M}"/>
 
+  <!-- Dimensões da camera disponíveis em: https://shop.luxonis.com/products/oak-d-lite-1?variant=42583102456031 -->
+
+  <xacro:property name="camera_height" value="${28 * M}"/>
+  <xacro:property name="camera_width" value="${91 * M}"/>
+  <xacro:property name="camera_length" value="${17.5 * M}"/>
+
   <xacro:solid_block 
     name="camera_support" 
     size_x="${camera_support_size}" 
     size_y="${camera_support_size}" 
     size_z="${camera_support_height}"
+  />
+
+  <xacro:solid_block
+    name="camera_block"
+    size_x="${camera_length}" 
+    size_y="${camera_width}" 
+    size_z="${camera_height}"
+  />
+
+  <xacro:camera_link name="camera_front"/>
+  <xacro:joint_fixed
+    parent="camera_support"
+    child="camera_front"
+    z="${camera_support_height}"
   />
 
 
@@ -41,7 +61,7 @@
   <!-- Link do laser (para o sensor LiDAR) -->
   <link name="laser"/>
 
-  <!-- Junta conectando o lidar ao body (centrado no topo) -->
+  <!-- Junta conectando o lidar ao body -->
   <xacro:property name="lidar_z_joint" value="${0.5 * body_height + 0.5 * lidar_height}"/>
   <xacro:joint_fixed 
     parent="body" 
@@ -49,18 +69,33 @@
     x="${lidar_offset_x}"
     z="${lidar_z_joint}"/>
 
-  <!-- Junta conectando o camera_support ao body (atrás do lidar) -->
-  <xacro:property name="camera_support_z_joint" value="${0.5 * body_height + 0.5 * camera_support_height}"/>
-  <xacro:joint_fixed 
-    parent="body" 
-    child="camera_support" 
-    x="${camera_offset_x}"
-    z="${camera_support_z_joint}"/>
-
   <!-- Junta conectando o link laser ao lidar -->
   <xacro:joint_fixed 
     parent="lidar" 
     child="laser" 
     z="${0.5 * lidar_height}"/>
 
+
+  <!-- Juntas relacionadas a camera -->
+  <xacro:property name="camera_support_z_joint" value="${base_top_z}"/>
+  <xacro:joint_fixed 
+    parent="body" 
+    child="camera_support" 
+    x="${camera_offset_x}"
+    z="${camera_support_z_joint}"/>
+
+
+  <xacro:joint_fixed
+    parent="camera_support"
+    child="camera_block"
+    x="${camera_length}"
+    z="${0.5* camera_support_height}"
+  />
+
+  <xacro:joint_fixed
+    parent="camera_block"
+    child="camera_front"
+    z="${0.5* camera_support_height}"
+  />
+  
 </robot>
