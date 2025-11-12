@@ -23,6 +23,11 @@
   <xacro:property name="camera_support_size" value="${20 * M}"/>
   <xacro:property name="camera_offset_x" value="${-30 * M}"/>
 
+  <!-- Dimensões do braço horizontal da camera -->
+  <xacro:property name="camera_arm_length" value="${60 * M}"/>
+  <xacro:property name="camera_arm_width" value="${15 * M}"/>
+  <xacro:property name="camera_arm_height" value="${15 * M}"/>
+
   <!-- Dimensões da camera disponíveis em: https://shop.luxonis.com/products/oak-d-lite-1?variant=42583102456031 -->
 
   <xacro:property name="camera_height" value="${28 * M}"/>
@@ -37,6 +42,13 @@
   />
 
   <xacro:solid_block
+    name="camera_arm"
+    size_x="${camera_arm_length}"
+    size_y="${camera_arm_width}"
+    size_z="${camera_arm_height}"
+  />
+
+  <xacro:solid_block
     name="camera_block"
     size_x="${camera_length}" 
     size_y="${camera_width}" 
@@ -44,11 +56,6 @@
   />
 
   <xacro:camera_link name="camera_front"/>
-  <xacro:joint_fixed
-    parent="camera_support"
-    child="camera_front"
-    z="${camera_support_height}"
-  />
 
 
   <!-- Lidar -->
@@ -82,20 +89,32 @@
     parent="body" 
     child="camera_support" 
     x="${camera_offset_x}"
-    z="${camera_support_z_joint}"/>
+    z="${0.5 *camera_support_z_joint + 0.5 * camera_support_height - ground_clearance}"/>
 
-
+  <!-- Braço horizontal conectado ao topo do suporte vertical, apontando para frente -->
   <xacro:joint_fixed
     parent="camera_support"
-    child="camera_block"
-    x="${camera_length}"
-    z="${0.5* camera_support_height}"
+    child="camera_arm"
+    x="${0.5 * camera_arm_length}"
+    z="${0.5 * camera_support_height}"
   />
 
+  <!-- Bloco da camera conectado ao final do braço horizontal -->
+  <!-- O final do braço está em x = 0.5 * camera_arm_length (do centro do braço) -->
+  <!-- O centro do bloco da camera precisa estar em x = 0.5 * camera_arm_length + 0.5 * camera_length -->
+  <xacro:joint_fixed
+    parent="camera_arm"
+    child="camera_block"
+    x="${0.5 * camera_arm_length + 0.5 * camera_length}"
+    z="${0.5 * camera_arm_height}"
+  />
+
+  <!-- Link da camera conectado ao bloco da camera -->
   <xacro:joint_fixed
     parent="camera_block"
     child="camera_front"
-    z="${0.5* camera_support_height}"
+    x="${0.5 * camera_length}"
+    z="${0.5 * camera_height}"
   />
   
 </robot>
